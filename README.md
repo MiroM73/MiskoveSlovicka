@@ -67,7 +67,7 @@ Below the settings there is a word list of all units of that grade.
 
 - **Progress is not saved.** When the app is closed, it starts again from step 1.
 - **No sound?** Check that the phone isn't on silent and that the media volume is turned up.
-- **Updates** come automatically. After a new version is published, the app downloads it in the background and shows it the next time it is opened.
+- **Updates.** The current version is shown under the title (e.g. *verzia 1.1.0*). When the app is opened online and a newer version has been published, a yellow bar says **Je dostupná nová verzia …** with **Aktualizovať** (downloads it and restarts the app) and **Neskôr** (hides the bar until the app is opened again). Even without tapping it, the app updates itself in the background within a couple of openings.
 
 ## Project structure
 
@@ -75,6 +75,7 @@ Below the settings there is a word list of all units of that grade.
 |---|---|
 | `index.html` | The whole app: layout, word lists, exercises and the embedded recordings |
 | `manifest.webmanifest` | App name, icons and colours used when the app is installed |
+| `version.js` | The app version. The page shows it, `sw.js` names its cache after it, and installed apps compare it with the online copy to offer an update |
 | `sw.js` | Service worker that keeps a copy of the app on the device for offline use |
 | `fonts.css`, `fonts/` | The Baloo 2 and Nunito fonts, stored locally so the app looks the same offline |
 | `icons/` | App icons, including maskable versions for Android's icon shapes |
@@ -83,5 +84,5 @@ The site is published with GitHub Pages from the `main` branch.
 
 ### Changing the app
 
-- Edit `index.html`, then commit and push. GitHub Pages publishes the change within a minute or two.
-- If you **add or rename a file** the app needs, add it to the `FILES` list in `sw.js` and raise the cache name (`slovicka-v1` → `slovicka-v2`), so phones download it for offline use.
+- Edit `index.html`, raise the version in `version.js` (e.g. `1.1.0` → `1.1.1`), then commit, tag (`v1.1.1`) and push. GitHub Pages publishes the change within a minute or two, and installed apps offer the update the next time they are opened.
+- If you **add or rename a file** the app needs, also add it to the `FILES` list in `sw.js`.

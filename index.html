@@ -10,6 +10,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="stylesheet" href="fonts.css">
+<script src="version.js"></script>
 </head><body>
 <style>
 /* Layout: one centered column, a tab switch, a step rail for the new words, one exercise card at a time */
@@ -104,14 +105,18 @@ input[type=text]{font:inherit;font-size:1.3rem;font-weight:700;width:100%;paddin
 .words div b{font-weight:800}
 .words div span{color:var(--muted);text-align:right}
 @media (max-width:520px){.words{grid-template-columns:1fr}}
+.upd{background:var(--sun-soft);border:2px solid var(--sun);border-radius:16px;padding:12px 14px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}
+.upd p{margin:0;flex:1 1 220px;font-weight:700}
+.upd .row{justify-content:flex-start}
 @media (prefers-reduced-motion:reduce){.flash .in,.bar i{transition:none}}
 </style>
 
 <div class="wrap">
   <header>
     <h1>Miškove slovíčka</h1>
-    <p class="sub">3. ročník: Unit 1–10 · opakovanie 3. a 2. ročníka · <span id="ver">verzia 1.0.0</span></p>
+    <p class="sub">3. ročník: Unit 1–10 · opakovanie 3. a 2. ročníka · <span id="ver"></span></p>
   </header>
+  <div id="upd" class="upd" role="status" hidden></div>
   <div class="tabs" role="tablist">
     <button class="tab" role="tab" id="t-new" aria-selected="true">3. ročník</button>
     <button class="tab" role="tab" id="t-rev3" aria-selected="false">Opakovanie 3. ročníka</button>
@@ -408,7 +413,41 @@ render();
 </script>
 <script>
 // Offline support: the service worker keeps a copy of the app on the phone.
-if("serviceWorker" in navigator) addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+if("serviceWorker" in navigator) addEventListener("load",()=>navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).catch(()=>{}));
+
+// Update check: compare this copy's version with the online version.js; offer an update when the online one is newer.
+const VERSION=self.APP_VERSION||"";
+document.getElementById("ver").textContent=VERSION?"verzia "+VERSION:"";
+const newer=(a,b)=>{const x=a.split(".").map(Number),y=b.split(".").map(Number);for(let i=0;i<3;i++){if((x[i]||0)!==(y[i]||0))return (x[i]||0)>(y[i]||0)}return false};
+let updLater=false;
+async function checkUpdate(){
+  if(!VERSION||updLater||!navigator.onLine) return;
+  try{
+    const r=await fetch("version.js?check="+Date.now(),{cache:"no-store"});
+    const online=(await r.text()).match(/APP_VERSION\s*=\s*"([\d.]+)"/)?.[1];
+    if(online&&newer(online,VERSION)) showUpdate(online);
+  }catch(e){}
+}
+function showUpdate(online){
+  const box=document.getElementById("upd"); box.innerHTML="";
+  const go=$("button",{class:"btn sun",onclick:async()=>{
+    go.disabled=true; go.textContent="Aktualizujem…";
+    try{
+      const reg=await navigator.serviceWorker?.getRegistration();
+      if(reg){
+        await reg.update();
+        const sw=reg.installing||reg.waiting;
+        if(sw) await new Promise(ok=>{const t=setTimeout(ok,15000);sw.addEventListener("statechange",()=>{if(sw.state==="activated"||sw.state==="redundant"){clearTimeout(t);ok()}})});
+      }
+    }catch(e){}
+    location.reload();
+  }},"Aktualizovať");
+  box.append($("p",{},"Je dostupná nová verzia "+online+" (máš "+VERSION+")."),
+    $("div",{class:"row"},go,$("button",{class:"btn ghost",onclick:()=>{updLater=true;box.hidden=true}},"Neskôr")));
+  box.hidden=false;
+}
+addEventListener("load",checkUpdate);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")checkUpdate()});
 </script>
 
 </body></html>
