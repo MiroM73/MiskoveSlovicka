@@ -108,6 +108,10 @@ input[type=text]{font:inherit;font-size:1.3rem;font-weight:700;width:100%;paddin
 .upd{background:var(--sun-soft);border:2px solid var(--sun);border-radius:16px;padding:12px 14px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}
 .upd p{margin:0;flex:1 1 220px;font-weight:700}
 .upd .row{justify-content:flex-start}
+.news{flex:1 1 100%;display:flex;flex-direction:column;gap:6px}
+.news h3{margin:0;font-size:.82rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.news b{font-family:var(--display);font-size:1.05rem}
+.news ul{margin:2px 0 0;padding-left:22px}
 @media (prefers-reduced-motion:reduce){.flash .in,.bar i{transition:none}}
 </style>
 
@@ -424,11 +428,13 @@ async function checkUpdate(){
   if(!VERSION||updLater||!navigator.onLine) return;
   try{
     const r=await fetch("version.js?check="+Date.now(),{cache:"no-store"});
-    const online=(await r.text()).match(/APP_VERSION\s*=\s*"([\d.]+)"/)?.[1];
-    if(online&&newer(online,VERSION)) showUpdate(online);
+    if(!r.ok) return;
+    // Run the online copy of our own version.js against a plain object to read its version and changelog
+    const o={}; new Function("self",await r.text())(o);
+    if(o.APP_VERSION&&newer(o.APP_VERSION,VERSION)) showUpdate(o.APP_VERSION,(o.CHANGELOG||[]).filter(e=>newer(e.version,VERSION)));
   }catch(e){}
 }
-function showUpdate(online){
+function showUpdate(online,changes){
   const box=document.getElementById("upd"); box.innerHTML="";
   const go=$("button",{class:"btn sun",onclick:async()=>{
     go.disabled=true; go.textContent="Aktualizujem…";
@@ -442,8 +448,10 @@ function showUpdate(online){
     }catch(e){}
     location.reload();
   }},"Aktualizovať");
-  box.append($("p",{},"Je dostupná nová verzia "+online+" (máš "+VERSION+")."),
-    $("div",{class:"row"},go,$("button",{class:"btn ghost",onclick:()=>{updLater=true;box.hidden=true}},"Neskôr")));
+  box.append($("p",{},"Je dostupná nová verzia "+online+" (máš "+VERSION+")."));
+  if(changes.length) box.append($("div",{class:"news"},$("h3",{},"Čo je nové"),
+    changes.map(e=>$("div",{},$("b",{},"Verzia "+e.version),$("ul",{},e.changes.map(t=>$("li",{},t)))))));
+  box.append($("div",{class:"row"},go,$("button",{class:"btn ghost",onclick:()=>{updLater=true;box.hidden=true}},"Neskôr")));
   box.hidden=false;
 }
 addEventListener("load",checkUpdate);

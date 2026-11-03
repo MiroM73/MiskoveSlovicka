@@ -67,7 +67,7 @@ Below the settings there is a word list of all units of that grade.
 
 - **Progress is not saved.** When the app is closed, it starts again from step 1.
 - **No sound?** Check that the phone isn't on silent and that the media volume is turned up.
-- **Updates.** The current version is shown under the title (e.g. *verzia 1.1.0*). When the app is opened online and a newer version has been published, a yellow bar says **Je dostupná nová verzia …** with **Aktualizovať** (downloads it and restarts the app) and **Neskôr** (hides the bar until the app is opened again). Even without tapping it, the app updates itself in the background within a couple of openings.
+- **Updates.** The current version is shown under the title (e.g. *verzia 1.1.0*). When the app is opened online and a newer version has been published, a yellow bar says **Je dostupná nová verzia …** and lists what changed since the version on the phone (**Čo je nové**), with **Aktualizovať** (downloads it and restarts the app) and **Neskôr** (hides the bar until the app is opened again). Even without tapping it, the app updates itself in the background within a couple of openings.
 
 ## Project structure
 
@@ -84,5 +84,5 @@ The site is published with GitHub Pages from the `main` branch.
 
 ### Changing the app
 
-- Edit `index.html`, raise the version in `version.js` (e.g. `1.1.0` → `1.1.1`), then commit, tag (`v1.1.1`) and push. GitHub Pages publishes the change within a minute or two, and installed apps offer the update the next time they are opened.
+- Edit `index.html`, raise the version in `version.js` (e.g. `1.1.0` → `1.1.1`) and add a new entry at the top of `CHANGELOG` there, in Slovak (it is shown in the app), then commit, tag (`v1.1.1`) and push. GitHub Pages publishes the change within a minute or two, and installed apps offer the update the next time they are opened.
 - If you **add or rename a file** the app needs, also add it to the `FILES` list in `sw.js`.
