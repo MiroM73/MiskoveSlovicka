@@ -1,7 +1,7 @@
 // Keeps a copy of the app on the phone so it opens instantly and works offline.
 // Files are served from the phone's copy first; a fresh copy is fetched in the
 // background, so an updated index.html shows up the next time the app is opened.
-const CACHE = "slovicka-v1";
+const CACHE = "slovicka-v2";
 const FILES = [
   "./",
   "index.html",

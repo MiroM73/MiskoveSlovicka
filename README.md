@@ -1,6 +1,6 @@
 # Miškove slovíčka
 
-A small app for practising English vocabulary, made for a Slovak 3rd-grade pupil. It covers the new words from **Unit 1, Lessons 1 and 3** of the 3rd grade and a review of all **10 units of the 2nd grade**. The app itself is in Slovak.
+A small app for practising English vocabulary, made for a Slovak 3rd-grade pupil. It covers all **10 units of the 3rd grade** and a review of all **10 units of the 2nd grade**. The app itself is in Slovak.
 
 **▶ Open the app: https://mirom73.github.io/MiskoveSlovicka/**
 
@@ -8,10 +8,10 @@ It is a Progressive Web App (PWA): it runs in the browser, can be installed on a
 
 ## Features
 
-- **14 new words** (school things and sports clothes) and **185 review words** from the 2nd grade
-- **A recording of every word**, played when you tap the speaker. If a recording can't be played, the phone's English voice reads the word instead.
+- **180 words** from the 3rd grade, split into Unit 1–10, and **185 review words** from the 2nd grade
+- **Recordings** of the 2nd-grade words and of Unit 1 (Lessons 1 and 3) of the 3rd grade, played when you tap the speaker. For the other words, or if a recording can't be played, the phone's English voice reads the word instead.
 - **Six learning steps** that go from recognising a word to writing it
-- **A review mode** where you pick the units, the type of exercise and the number of words
+- **A review mode** for each grade where you pick the units, the type of exercise and the number of words
 - **Works offline** once it has been opened with an internet connection
 - **Light and dark mode**, following the phone's setting
 
@@ -34,11 +34,11 @@ Open the link and click the **Install** icon at the right end of the address bar
 
 ## How to use it
 
-The app has two tabs.
+The app has three tabs.
 
-### Nové slovíčka (New words)
+### 3. ročník (3rd grade)
 
-Work through the six steps in order. The numbered buttons at the top show where you are, and you can jump to any step.
+At the top, pick the **units** to learn (one or more, or **Všetky** for all). Then work through the six steps in order. If more than 30 words are picked, steps 2–6 use a random set of 20 of them. After step 6 the app offers to continue with the next unit. The numbered buttons at the top show where you are, and you can jump to any step.
 
 | Step | What you do |
 |---|---|
@@ -51,15 +51,17 @@ Work through the six steps in order. The numbered buttons at the top show where 
 
 A word answered wrongly comes back later in the same round, up to three times. At the end of a round you see how many words were right on the first try and which words to practise again. **Len chyby** repeats only the mistakes.
 
-### Opakovanie 2. ročníka (2nd-grade review)
+### Opakovanie 3. ročníka / Opakovanie 2. ročníka (review)
+
+Both review tabs work the same way:
 
 1. Choose the **units** (Unit 1–10, or **Všetky** for all).
 2. Choose the **exercise**: choose EN → SK, choose SK → EN, listen, spell or write.
-3. Choose the **number of words** (10, 15 or 25).
-4. Optionally turn on **Primiešať aj nové slovíčka**, which mixes in a few of the new 3rd-grade words.
+3. Choose the **number of words** (10, 15, 25 or **Všetky** for all).
+4. Optionally turn on mixing in a few words from the other grade (in the 2nd-grade review, from the units picked in the **3. ročník** tab).
 5. Tap **Začať opakovanie**.
 
-Below the settings there is a word list of all 2nd-grade units.
+Below the settings there is a word list of all units of that grade.
 
 ### Good to know
 
