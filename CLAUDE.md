@@ -1,6 +1,8 @@
 # Miškove slovíčka
 
-A PWA for practising English vocabulary, made for Miško, a Slovak 3rd-grade pupil. The family installs it on Android phones from GitHub Pages. The UI is in Slovak; README.md is in English. The user writes in Slovak, so reply in Slovak.
+A PWA for practising English vocabulary, made for Miško, a Slovak 3rd-grade pupil. The family installs it on Android phones from GitHub Pages. The user writes in Slovak, so reply in Slovak.
+
+Languages (the user's decision): the app UI, the CHANGELOG in `version.js` (shown in the app), GitHub release notes and README.md are in **Slovak**. Code, code comments, commit messages and this CLAUDE.md stay in **English**.
 
 - Repo: https://github.com/MiroM73/MiskoveSlovicka (public, branch `main`). This folder is the repo root.
 - Live: https://mirom73.github.io/MiskoveSlovicka/ (GitHub Pages builds from `main`; the "pages build and deployment" run takes about 1–2 minutes)
