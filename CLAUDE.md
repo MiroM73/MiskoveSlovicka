@@ -12,7 +12,7 @@ Languages (the user's decision): the app UI, the CHANGELOG in `version.js` (show
 
 | Path | What it is |
 |---|---|
-| `index.html` | The whole app: inline CSS, word data, embedded audio, JS (~1.5 MB) |
+| `index.html` | The whole app: inline CSS, word data, JS (~40 KB) |
 | `version.js` | The app version, the single source (see Versioning) |
 | `sw.js` | Service worker: offline cache (`CACHE` name from version.js + `FILES` list) |
 | `manifest.webmanifest` | PWA manifest (name, icons, colors) |
@@ -20,15 +20,15 @@ Languages (the user's decision): the app UI, the CHANGELOG in `version.js` (show
 | `icons/` | App icons, maskable icons, favicon, apple-touch-icon |
 | `skens/` | Textbook wordlist PDF (source of the words). In `.gitignore`, never pushed |
 
-## index.html: careful when reading
+## index.html
 
-One line holds `const AUDIO={...}`: base64 MP3 recordings, ~1.5 MB on a single line. Never read the whole file. Use Grep, or Read with `offset`/`limit`, and skip that line. Edit with exact-string Edit or a small Python script (`python -I`, UTF-8, `newline=''`).
+Edit with exact-string Edit or a small Python script (`python -I`, UTF-8, `newline=''`).
 
 The layout of the script, top to bottom:
 
 - `G3SRC` = 3rd-grade words: `{unit: {lesson: "en|sk;en|sk;…"}}`. Units 1–10, Lessons 1, 3 and 5 each (8 + 6 + 4 = 18 words per unit, 180 in total). Built into `G3[unit] = [{en, sk, u, l}]`. Unit names are in `UN3`.
 - `G2` = 2nd-grade words: `{unit: ["en|sk", …]}` built into `[{en, sk, u}]` (185 words, no lesson). Unit names are in `UN2`.
-- `AUDIO` = `{englishWord: "data:audio/mpeg;base64,…"}` with 199 recordings, covering only the 2nd grade and 3rd-grade Unit 1 Lessons 1 and 3. `speak(t)` plays the recording or falls back to `speechSynthesis` (en-GB). New words get no recording; TTS covers them.
+- `speak(t)` = `tts(t)`: every word is read by `speechSynthesis` (en-GB, rate .85). Until 1.1.0 the 2nd grade and 3rd-grade Unit 1 Lessons 1 and 3 had embedded MP3 recordings (`AUDIO`, ~1.5 MB); 1.2.0 removed them at the user's request so all words sound the same.
 - `$()` element helper, `shuffle`, `norm` (lowercase, strips diacritics so "cafe" matches "café", normalises apostrophes and spaces).
 - State: `tab` ("new" | "rev3" | "rev"), `step` (0–5), `done`, `learnUnits` (Set of 3rd-grade units picked in the first tab). `NEW()` returns the words of `learnUnits`.
 - `unitChips(units, names, onChange)`: the "Všetky / Unit 1…10" multi-select chips, shared by all tabs.
@@ -45,7 +45,7 @@ Design: one centered column (max 760px), CSS variables for light/dark theme (`pr
 
 ## Versioning and releasing
 
-Current version: **1.1.0** (1.0.0 = all 10 units of the 3rd grade; 1.1.0 = update notice with a "Čo je nové" list).
+Current version: **1.2.0** (1.0.0 = all 10 units of the 3rd grade; 1.1.0 = update notice with a "Čo je nové" list; 1.2.0 = TTS for all words, recordings removed).
 
 `version.js` (`self.APP_VERSION = "X.Y.Z";` plus `self.CHANGELOG = [{version, date, changes:[…]}, …]`, newest first, changes written in Slovak for Miško and the family) is the **only** place the version lives in the files:
 - `index.html` loads it in `<head>` and shows it in the subtitle (`#ver`).
@@ -78,4 +78,5 @@ The textbook "Wordlist / Slovná zásoba" pages, 6 pages in total:
 
 - 2026-10-18: the original single-file HTML app was turned into a PWA in a `pwa/` subfolder; only 3rd-grade Unit 1 Lessons 1 and 3 (14 words) plus the 2nd-grade review.
 - 2026-11-03: v1.1.0 adds `version.js` and the in-app update notice.
+- 2026-11-03: v1.2.0 drops the embedded MP3 recordings; all words use TTS.
 - 2026-11-03: v1.0.0. All 10 units of the 3rd grade, a unit picker, the 3rd-grade review tab, and "Všetky" in the review counts. The repo was flattened to this folder, the original HTML was deleted, and `skens/` was moved in and git-ignored.
