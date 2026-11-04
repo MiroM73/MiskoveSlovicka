@@ -12,7 +12,7 @@ Languages (the user's decision): the app UI, the CHANGELOG in `version.js` (show
 
 | Path | What it is |
 |---|---|
-| `index.html` | The whole app: inline CSS, word data, embedded audio, JS (~1.5 MB) |
+| `index.html` | The whole app: inline CSS, word data, embedded audio, JS (~1.5 MB). A `<head>` script does the app zoom, same as Miškova gramatika: Ctrl+wheel, Ctrl +/−/0, two-finger pinch; CSS `zoom: var(--z)` on `.wrap`, 0.5–2.5, localStorage `slovicka-zoom`, reset button `#zr`; it sets `w-xs` ≤460 / `w-s` ≤520 on `<html>` from screen width ÷ zoom. Use these classes, not width media queries |
 | `version.js` | The app version, the single source (see Versioning) |
 | `sw.js` | Service worker: offline cache (`CACHE` name from version.js + `FILES` list) |
 | `manifest.webmanifest` | PWA manifest (name, icons, colors) |
@@ -45,7 +45,7 @@ Design: one centered column (max 760px), CSS variables for light/dark theme (`pr
 
 ## Versioning and releasing
 
-Current version: **1.1.0** (1.0.0 = all 10 units of the 3rd grade; 1.1.0 = update notice with a "Čo je nové" list).
+Current version: **1.2.0** (1.0.0 = all 10 units of the 3rd grade; 1.1.0 = update notice with a "Čo je nové" list; 1.2.0 = app zoom).
 
 `version.js` (`self.APP_VERSION = "X.Y.Z";` plus `self.CHANGELOG = [{version, date, changes:[…]}, …]`, newest first, changes written in Slovak for Miško and the family) is the **only** place the version lives in the files:
 - `index.html` loads it in `<head>` and shows it in the subtitle (`#ver`).

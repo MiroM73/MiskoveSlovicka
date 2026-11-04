@@ -66,6 +66,7 @@ Pod nastaveniami je slovníček všetkých unitov daného ročníka.
 ### Dobré vedieť
 
 - **Postup sa neukladá.** Po zatvorení aplikácia začína znova od kroku 1.
+- **Zväčšenie a zmenšenie.** Na počítači **Ctrl + koliesko myši** (alebo **Ctrl +** a **Ctrl −**, **Ctrl 0** vráti 100 %), na telefóne a tablete roztiahni alebo stiahni **dva prsty**. Ide to od 50 % do 250 %, text sa vždy zalomí na šírku obrazovky. Veľkosť si aplikácia zapamätá; kým nie je 100 %, vpravo dole je malé tlačidlo s lupou, ktoré ju vráti späť.
 - **Nejde zvuk?** Skontroluj, či telefón nie je stlmený a či je zapnutá hlasitosť médií.
 - **Aktualizácie.** Aktuálna verzia je pod nadpisom (napr. *verzia 1.1.0*). Keď aplikáciu otvoríš online a je zverejnená novšia verzia, objaví sa žltá lišta **Je dostupná nová verzia …** so zoznamom **Čo je nové** od verzie v telefóne. **Aktualizovať** stiahne novú verziu a aplikáciu reštartuje, **Neskôr** lištu skryje do ďalšieho otvorenia. Aj bez ťuknutia sa aplikácia sama aktualizuje na pozadí v priebehu niekoľkých otvorení.
 

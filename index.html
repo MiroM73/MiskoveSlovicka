@@ -11,6 +11,68 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="stylesheet" href="fonts.css">
 <script src="version.js"></script>
+<script>
+// App zoom: Ctrl + mouse wheel and Ctrl + / Ctrl − / Ctrl 0 on a PC, a two-finger pinch on phones and tablets.
+// Browser zoom cannot go below 100 % on a phone, so the app scales .wrap itself (CSS zoom, --z): the text reflows
+// to the screen instead of needing sideways scrolling. The level is remembered; the button bottom right resets it.
+(function(){
+  const R=document.documentElement, MIN=0.5, MAX=2.5, KEY="slovicka-zoom";
+  const clamp=v=>Math.min(MAX,Math.max(MIN,v));
+  let z=1; try{z=clamp(+localStorage.getItem(KEY)||1)}catch(e){}
+  function layout(){
+    const w=R.clientWidth/z;
+    R.classList.toggle("w-xs",w<=460); R.classList.toggle("w-s",w<=520);
+  }
+  function apply(){
+    R.style.setProperty("--z",z); layout();
+    const b=document.getElementById("zr");
+    if(b){b.hidden=z===1; b.textContent="🔍 "+Math.round(z*100)+" %"}
+  }
+  // Change the level and keep the point (cx, cy) on the screen roughly where it was
+  function set(nz,cx,cy){
+    nz=Math.round(clamp(nz)*100)/100; if(Math.abs(nz-1)<0.04) nz=1;
+    if(nz===z) return;
+    const r=nz/z, x=scrollX, y=scrollY;
+    z=nz; apply();
+    scrollTo((x+cx)*r-cx,(y+cy)*r-cy);
+    try{z===1?localStorage.removeItem(KEY):localStorage.setItem(KEY,z)}catch(e){}
+  }
+  apply();
+  addEventListener("resize",layout);
+  addEventListener("DOMContentLoaded",()=>{
+    const b=document.getElementById("zr");
+    b.onclick=()=>set(1,innerWidth/2,0); apply();
+  });
+  addEventListener("wheel",e=>{
+    if(!e.ctrlKey) return;
+    e.preventDefault();
+    const d=Math.max(-150,Math.min(150,e.deltaY*(e.deltaMode===1?33:e.deltaMode===2?400:1)));
+    set(z*Math.exp(-d/500),e.clientX,e.clientY);
+  },{passive:false});
+  addEventListener("keydown",e=>{
+    if(!(e.ctrlKey||e.metaKey)||e.altKey) return;
+    const k=e.key, c=[innerWidth/2,innerHeight/2];
+    if(k==="+"||k==="="||k==="Add"){e.preventDefault();set(z*1.1,...c)}
+    else if(k==="-"||k==="_"||k==="Subtract"){e.preventDefault();set(z/1.1,...c)}
+    else if(k==="0"){e.preventDefault();set(1,...c)}
+  });
+  // Pinch: the zoom follows the change of the distance between two fingers; one update per frame
+  let pin=null, raf=0;
+  const dist=t=>Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);
+  addEventListener("touchstart",e=>{if(e.touches.length===2) pin={d:dist(e.touches)||1,z}},{passive:true});
+  addEventListener("touchmove",e=>{
+    if(!pin||e.touches.length!==2) return;
+    e.preventDefault();
+    const t=e.touches, nz=pin.z*dist(t)/pin.d, cx=(t[0].clientX+t[1].clientX)/2, cy=(t[0].clientY+t[1].clientY)/2;
+    cancelAnimationFrame(raf); raf=requestAnimationFrame(()=>set(nz,cx,cy));
+  },{passive:false});
+  const end=e=>{if(e.touches.length<2) pin=null};
+  addEventListener("touchend",end); addEventListener("touchcancel",end);
+  // iOS Safari zooms the page on its own gesture events even with touch-action
+  ["gesturestart","gesturechange"].forEach(t=>addEventListener(t,e=>e.preventDefault(),{passive:false}));
+  self.appZoom={set,get:()=>z};
+})();
+</script>
 </head><body>
 <style>
 /* Layout: one centered column, a tab switch, a step rail for the new words, one exercise card at a time */
@@ -44,7 +106,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-of
 .st b{display:block;font-family:var(--display);font-size:1.15rem;line-height:1.1;color:var(--ink)}
 .st.on{border-color:var(--accent);background:var(--accent-soft);color:var(--ink)}
 .st.done{border-color:var(--ok);background:var(--ok-soft)}
-@media (max-width:520px){.rail{grid-template-columns:repeat(3,1fr)}}
+.w-s .rail{grid-template-columns:repeat(3,1fr)}
 .card{background:var(--surface);border:2px solid var(--line);border-radius:20px;padding:22px;display:flex;flex-direction:column;gap:16px}
 .card h2{font-family:var(--display);font-size:1.4rem;margin:0;line-height:1.2}
 .hint{color:var(--muted);margin:0}
@@ -54,7 +116,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-of
 .prompt{font-family:var(--display);font-weight:800;font-size:clamp(1.7rem,6vw,2.4rem);text-align:center;line-height:1.15;padding:10px 0;overflow-wrap:anywhere}
 .lbl{display:block;text-align:center;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:800}
 .opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media (max-width:460px){.opts{grid-template-columns:1fr}}
+.w-xs .opts{grid-template-columns:1fr}
 .opt{border:2px solid var(--line);background:var(--bg);border-radius:14px;padding:12px;font-weight:700;font-size:1.05rem;min-height:52px}
 .opt:hover:not(:disabled){border-color:var(--accent)}
 .opt.ok{border-color:var(--ok);background:var(--ok-soft)}
@@ -104,7 +166,7 @@ input[type=text]{font:inherit;font-size:1.3rem;font-weight:700;width:100%;paddin
 .words div{display:flex;justify-content:space-between;gap:8px;border-bottom:1px dashed var(--line);padding:4px 0;font-size:.95rem}
 .words div b{font-weight:800}
 .words div span{color:var(--muted);text-align:right}
-@media (max-width:520px){.words{grid-template-columns:1fr}}
+.w-s .words{grid-template-columns:1fr}
 .upd{background:var(--sun-soft);border:2px solid var(--sun);border-radius:16px;padding:12px 14px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}
 .upd p{margin:0;flex:1 1 220px;font-weight:700}
 .upd .row{justify-content:flex-start}
@@ -112,6 +174,13 @@ input[type=text]{font:inherit;font-size:1.3rem;font-weight:700;width:100%;paddin
 .news h3{margin:0;font-size:.82rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .news b{font-family:var(--display);font-size:1.05rem}
 .news ul{margin:2px 0 0;padding-left:22px}
+/* App zoom (script in <head>): CSS zoom on .wrap; w-xs (≤460px) and w-s (≤520px) on <html> come from the screen width
+   divided by the zoom, so the narrow layout also turns on when zooming in on a PC. The pinch is handled by the app. */
+.wrap{zoom:var(--z,1)}
+html{touch-action:pan-x pan-y}
+.zr{position:fixed;z-index:10;right:calc(8px + env(safe-area-inset-right,0px));bottom:calc(8px + env(safe-area-inset-bottom,0px));
+  border:1px solid var(--accent);background:var(--surface);color:var(--ink);border-radius:999px;padding:2px 7px;
+  font-size:.7rem;font-weight:800;line-height:1.4;box-shadow:0 2px 6px rgba(0,0,0,.18)}
 @media (prefers-reduced-motion:reduce){.flash .in,.bar i{transition:none}}
 </style>
 
@@ -130,6 +199,7 @@ input[type=text]{font:inherit;font-size:1.3rem;font-weight:700;width:100%;paddin
   <div id="rail" class="rail"></div>
   <main id="app"></main>
 </div>
+<button id="zr" class="zr" aria-label="Vrátiť veľkosť na 100 %" title="Vrátiť veľkosť na 100 %" hidden></button>
 
 <script>
 // 3. ročník: unit -> lesson -> "en|sk;en|sk;…"
