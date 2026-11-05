@@ -39,13 +39,13 @@ The layout of the script, top to bottom:
 - `REV` holds review settings per grade (`{units, mode, count, mix}`; count 0 = all). `reviewSetup(g)` draws "Opakovanie g. ročníka" for g = 2 or 3. In the 2nd-grade review, "mix" mixes in words from the 3rd-grade `learnUnits`; in the 3rd-grade review it mixes in the 2nd grade.
 - The tabs in the HTML are `#t-new` "3. ročník", `#t-rev3` "Opakovanie 3. ročníka" and `#t-rev` "Opakovanie 2. ročníka".
 
-The progress isn't saved anywhere (no storage); it resets on reload.
+Progress (since 1.4.0, issue #1): localStorage `slovicka-pokrok` = `{v:1, items:{"grade|en|skill": [right, wrong, right-in-a-row, lastTime]}}`, skill `r` = recognise (choose EN→SK, listen) or `w` = produce (choose SK→EN, spell, write). `record()` runs on a word's first try in a quiz round only; `match` doesn't record. `wstat(w,s)` = 0 new / 1 to repeat (last answer wrong) / 2 learning / 3 known (3 right in a row in every skill tried). `pickW(pool,n,s)` takes words to repeat first (up to half of n), then a weighted random pick; it replaces the random `SAMPLE` and the review pick. Word lists mark words ✔ • ! (`wordRow`), `progSum` shows counts, the review card has "Vynulovať pokrok". The store is meant to be synced across devices later (issue #2, Firebase). The current round's state (tab, step, units) still resets on reload.
 
 Design: one centered column (max 760px), CSS variables for light/dark theme (`prefers-color-scheme` + `data-theme`), and the Baloo 2 (display) and Nunito (body) fonts. Keep the existing style and compact one-liner JS idiom.
 
 ## Versioning and releasing
 
-Current version: **1.3.1** (1.0.0 = all 10 units of the 3rd grade; 1.1.0 = update notice with a "Čo je nové" list; 1.2.0 = TTS for all words, recordings removed; 1.3.0 = app zoom; 1.3.1 = a wrong answer comes back until it is answered correctly).
+Current version: **1.4.0** (1.0.0 = all 10 units of the 3rd grade; 1.1.0 = update notice with a "Čo je nové" list; 1.2.0 = TTS for all words, recordings removed; 1.3.0 = app zoom; 1.3.1 = a wrong answer comes back until it is answered correctly; 1.4.0 = progress saved on the device).
 
 `version.js` (`self.APP_VERSION = "X.Y.Z";` plus `self.CHANGELOG = [{version, date, changes:[…]}, …]`, newest first, changes written in Slovak for Miško and the family) is the **only** place the version lives in the files:
 - `index.html` loads it in `<head>` and shows it in the subtitle (`#ver`).

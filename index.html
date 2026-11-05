@@ -167,6 +167,12 @@ input[type=text]{font:inherit;font-size:1.3rem;font-weight:700;width:100%;paddin
 .words div b{font-weight:800}
 .words div span{color:var(--muted);text-align:right}
 .w-s .words{grid-template-columns:1fr}
+.words div.p1 b::before{content:"! ";color:var(--bad)}
+.words div.p2 b::before{content:"• ";color:var(--sun)}
+.words div.p3 b::before{content:"✔ ";color:var(--ok)}
+.prog{display:flex;flex-wrap:wrap;gap:6px;margin:0}
+.prog span{border-radius:8px;padding:2px 8px;font-weight:700;font-size:.9rem;background:var(--bg)}
+.prog .p1{background:var(--bad-soft);color:var(--bad)}.prog .p2{background:var(--sun-soft)}.prog .p3{background:var(--ok-soft);color:var(--ok)}
 .upd{background:var(--sun-soft);border:2px solid var(--sun);border-radius:16px;padding:12px 14px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}
 .upd p{margin:0;flex:1 1 220px;font-weight:700}
 .upd .row{justify-content:flex-start}
@@ -270,6 +276,30 @@ let tab="new", step=0, done=new Set(), learnUnits=new Set([1]);
 const NEW=()=>[...learnUnits].sort((a,b)=>a-b).flatMap(u=>G3[u]);
 const BIG=30, SAMPLE=20;
 
+// Progress kept on this device in localStorage, per word and skill: r = recognise (EN→SK, listen),
+// w = produce (SK→EN, spell, write). Each entry is [right, wrong, right answers in a row, time of the
+// last answer]. Only a word's first try in a round counts, so repeating a wrong word doesn't add points.
+const PK="slovicka-pokrok";
+const PROG=(()=>{try{const p=JSON.parse(localStorage.getItem(PK));if(p&&p.v===1&&p.items)return p}catch(e){}return {v:1,items:{}}})();
+const saveProg=()=>{try{localStorage.setItem(PK,JSON.stringify(PROG))}catch(e){}};
+const wkey=(w,s)=>(w.l?3:2)+"|"+w.en+"|"+s;
+const skillOf=(kind,dir)=>kind==="spell"||kind==="write"||dir==="sk-en"?"w":"r";
+function record(w,s,ok){const k=wkey(w,s), r=PROG.items[k]||[0,0,0,0];if(ok){r[0]++;r[2]++}else{r[1]++;r[2]=0}r[3]=Date.now();PROG.items[k]=r;saveProg()}
+const recs=(w,s)=>(s?[s]:["r","w"]).map(x=>PROG.items[wkey(w,x)]).filter(Boolean);
+// Status: 0 new, 1 to repeat (the last answer was wrong), 2 learning, 3 known (3 right in a row in every skill tried)
+function wstat(w,s){const rs=recs(w,s);return !rs.length?0:rs.some(r=>r[2]===0)?1:rs.every(r=>r[2]>=3)?3:2}
+// Pick n words: words to repeat always come first (up to half of n), the rest is a weighted random
+// pick where new words come more often than ones being learnt, and known words rarely
+// (a bit more often when not seen for a week).
+const WT=[3,3,2,1];
+function pickW(pool,n,s){const now=Date.now(), rep=shuffle(pool.filter(w=>wstat(w,s)===1)).slice(0,Math.ceil(n/2));
+  return [...rep,...pool.filter(w=>!rep.includes(w)).map(w=>{const st=wstat(w,s);let wt=WT[st];if(st===3&&now-Math.max(...recs(w,s).map(r=>r[3]))>7*864e5)wt=2;return {w,k:Math.random()**(1/wt)}})
+    .sort((a,b)=>b.k-a.k).slice(0,n-rep.length).map(x=>x.w)]}
+const PNAME=["nové","zopakovať","učíš sa","vieš"];
+function progSum(words){const n=[0,0,0,0];words.forEach(w=>n[wstat(w)]++);
+  return $("p",{class:"prog"},[3,2,1,0].filter(i=>n[i]).map(i=>$("span",{class:"p"+i},["","! ","• ","✔ "][i]+PNAME[i]+": "+n[i])))}
+const wordRow=w=>$("div",{class:"p"+wstat(w),title:PNAME[wstat(w)]},$("b",{},w.en),$("span",{},w.sk));
+
 function unitChips(units,names,onChange){
   const all=Object.keys(names).map(Number), box=$("div",{class:"chips"});
   box.append($("button",{class:"chip","aria-pressed":units.size===all.length,onclick:()=>{const on=units.size===all.length;units.clear();if(!on)all.forEach(u=>units.add(u));onChange()}},"Všetky"));
@@ -294,8 +324,8 @@ function render(){
   if(tab==="rev3") return reviewSetup(3);
   if(!learnUnits.size) return app.append($("section",{class:"card"},$("p",{class:"fb bad"},"Vyber aspoň jeden Unit.")));
   const next=()=>{done.add(step);if(step<5){step++;render();window.scrollTo({top:0})}else finale()};
-  const all=NEW(), pool=all.length>BIG?shuffle(all).slice(0,SAMPLE):all;
-  const h=t=>pool.length<all.length?t+" Vybraných je veľa slovíčok, preto je tu náhodne "+SAMPLE+" z nich.":t;
+  const all=NEW(), pool=all.length>BIG?pickW(all,SAMPLE):all;
+  const h=t=>pool.length<all.length?t+" Vybraných je veľa slovíčok, preto je tu "+SAMPLE+" z nich, hlavne tie, ktoré ešte nevieš.":t;
   [cards,()=>quiz("choose","en-sk",pool,all,next,"Vyber správny preklad",h("Prečítaj si anglické slovo a vyber, čo znamená po slovensky.")),
    ()=>quiz("listen","en-sk",pool,all,next,"Počúvaj a vyber",h("Stlač reproduktor, vypočuj si slovo a vyber správny preklad.")),
    ()=>match(pool,next),
@@ -325,8 +355,8 @@ function cards(next){
       $("div",{class:"row"},$("button",{class:"btn sun",onclick:next},"Viem ich, ďalší krok")));
   };
   draw();
-  const all=$("section",{class:"card"},$("h2",{},"Vybrané slovíčka"));
-  [...learnUnits].sort((a,b)=>a-b).forEach(u=>all.append($("div",{class:"fs"},$("h3",{},"Unit "+u+" · "+UN3[u]),$("div",{class:"words"},G3[u].map(w=>$("div",{},$("b",{},w.en),$("span",{},w.sk)))))));
+  const all=$("section",{class:"card"},$("h2",{},"Vybrané slovíčka"),progSum(W));
+  [...learnUnits].sort((a,b)=>a-b).forEach(u=>all.append($("div",{class:"fs"},$("h3",{},"Unit "+u+" · "+UN3[u]),$("div",{class:"words"},G3[u].map(wordRow)))));
   app.append(all);
 }
 
@@ -341,7 +371,7 @@ function quiz(kind,dir,pool,distractPool,onDone,title,hint,reviewMode){
       $("div",{class:"bar"},$("i",{style:"width:"+(doneN/total*100)+"%"})));
     const box=$("div",{class:"fs"});c.append(box);
     const answered=(ok,correctText)=>{
-      it.tries++;
+      it.tries++; if(it.tries===1)record(w,skillOf(kind,dir),ok);
       if(ok){ if(it.tries===1)firstOk++; doneN++; queue.shift(); }
       else { if(!wrong.includes(w))wrong.push(w); queue.shift(); queue.splice(Math.min(queue.length,2+Math.floor(Math.random()*2)),0,it); }
       speak(w.en);
@@ -455,7 +485,7 @@ function reviewSetup(g){
   const nc=$("button",{class:"chip","aria-pressed":R.mix,onclick:e=>{R.mix=!R.mix;e.currentTarget.setAttribute("aria-pressed",R.mix)}},
     g===2?"Primiešať aj slovíčka z 3. ročníka (unity vybrané v karte 3. ročník)":"Primiešať aj slovíčka z 2. ročníka");
   const err=$("p",{class:"fb bad",hidden:""},"Vyber aspoň jeden Unit.");
-  c.append($("h2",{},"Opakovanie "+g+". ročníka"),$("p",{class:"hint"},"Vyber unity a spôsob opakovania. Slovíčka sa vyberú náhodne."),
+  c.append($("h2",{},"Opakovanie "+g+". ročníka"),$("p",{class:"hint"},"Vyber unity a spôsob opakovania. Najčastejšie prídu slovíčka, ktoré si ešte popletieš alebo ešte nevieš."),
     $("div",{class:"fs"},$("h3",{},"Unity"),units),
     $("div",{class:"fs"},$("h3",{},"Spôsob"),mc),
     $("div",{class:"fs"},$("h3",{},"Počet"),cc),
@@ -464,8 +494,9 @@ function reviewSetup(g){
     $("div",{class:"row"},$("button",{class:"btn sun",onclick:()=>{
       if(!R.units.size){err.hidden=false;return}
       const pool=[...R.units].flatMap(u=>G[u]), n=R.count||pool.length, mix=R.mix&&extra.length;
-      let pick=shuffle(pool).slice(0,n);
-      if(mix){const k=Math.max(2,Math.round(n/5));pick=shuffle([...pick.slice(0,n-k),...shuffle(extra).slice(0,k)]);}
+      const sk=R.mode==="choose-en"||R.mode==="listen"?"r":"w";
+      let pick=pickW(pool,n,sk);
+      if(mix){const k=Math.max(2,Math.round(n/5));pick=shuffle([...pick.slice(0,n-k),...pickW(extra,k,sk)]);}
       const dist=mix?[...pool,...extra]:pool;
       app.innerHTML="";
       const back=()=>{app.innerHTML="";reviewSetup(g);window.scrollTo({top:0})};
@@ -476,8 +507,10 @@ function reviewSetup(g){
         "write":["write","sk-en","Napíš po anglicky","Napíš anglické slovo. Pomôcka ukáže prvé písmená."]}[R.mode];
       quiz(map[0],map[1],pick,dist,back,map[2],map[3],true);
     }},"Začať opakovanie ▶")));
-  const lc=$("section",{class:"card"},$("h2",{},"Slovníček "+g+". ročníka"));
-  Object.keys(G).forEach(u=>lc.append($("div",{class:"fs"},$("h3",{},"Unit "+u+" · "+N[u]),$("div",{class:"words"},G[u].map(w=>$("div",{},$("b",{},w.en),$("span",{},w.sk)))))));
+  const lc=$("section",{class:"card"},$("h2",{},"Slovníček "+g+". ročníka"),progSum(Object.values(G).flat()),
+    $("p",{class:"hint"},"✔\u00a0vieš (3× za sebou správne) · •\u00a0učíš\u00a0sa · !\u00a0zopakovať (naposledy chyba). Pokrok sa ukladá v tomto zariadení."),
+    $("div",{class:"row"},$("button",{class:"btn ghost",onclick:()=>{if(confirm("Naozaj vymazať celý pokrok v slovíčkach (2. aj 3. ročník) v tomto zariadení?")){for(const k in PROG.items)delete PROG.items[k];saveProg();render()}}},"Vynulovať pokrok")));
+  Object.keys(G).forEach(u=>lc.append($("div",{class:"fs"},$("h3",{},"Unit "+u+" · "+N[u]),$("div",{class:"words"},G[u].map(wordRow)))));
   app.append(lc);
 }
 
