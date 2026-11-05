@@ -45,7 +45,7 @@ Design: one centered column (max 760px), CSS variables for light/dark theme (`pr
 
 ## Versioning and releasing
 
-Current version: **1.3.0** (1.0.0 = all 10 units of the 3rd grade; 1.1.0 = update notice with a "Čo je nové" list; 1.2.0 = TTS for all words, recordings removed; 1.3.0 = app zoom).
+Current version: **1.3.1** (1.0.0 = all 10 units of the 3rd grade; 1.1.0 = update notice with a "Čo je nové" list; 1.2.0 = TTS for all words, recordings removed; 1.3.0 = app zoom; 1.3.1 = a wrong answer comes back until it is answered correctly).
 
 `version.js` (`self.APP_VERSION = "X.Y.Z";` plus `self.CHANGELOG = [{version, date, changes:[…]}, …]`, newest first, changes written in Slovak for Miško and the family) is the **only** place the version lives in the files:
 - `index.html` loads it in `<head>` and shows it in the subtitle (`#ver`).

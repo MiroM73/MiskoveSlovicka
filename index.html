@@ -343,7 +343,7 @@ function quiz(kind,dir,pool,distractPool,onDone,title,hint,reviewMode){
     const answered=(ok,correctText)=>{
       it.tries++;
       if(ok){ if(it.tries===1)firstOk++; doneN++; queue.shift(); }
-      else { if(!wrong.includes(w))wrong.push(w); queue.shift(); if(it.tries<3)queue.push(it); else doneN++; }
+      else { if(!wrong.includes(w))wrong.push(w); queue.shift(); queue.splice(Math.min(queue.length,2+Math.floor(Math.random()*2)),0,it); }
       speak(w.en);
       const fb=ok?$("div",{class:"fb ok"},"Výborne! ",$("span",{},w.en+" = "+w.sk))
                  :$("div",{class:"fb bad"},"Ešte nie. Správne: ",$("span",{},w.en+" = "+w.sk));
