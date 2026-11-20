@@ -81,3 +81,16 @@ The textbook "Wordlist / Slovná zásoba" pages, 6 pages in total:
 - 2026-11-04: v1.3.0 adds the app zoom (ported from Miškova gramatika). A mistaken v1.2.0 tag/release was first created on the zoom commit, before the TTS 1.2.0 commit from origin was merged.
 - 2026-11-03: v1.2.0 drops the embedded MP3 recordings; all words use TTS.
 - 2026-11-03: v1.0.0. All 10 units of the 3rd grade, a unit picker, the 3rd-grade review tab, and "Všetky" in the review counts. The repo was flattened to this folder, the original HTML was deleted, and `skens/` was moved in and git-ignored.
+
+## Working economically
+
+- `index.html` is ~560 lines / 44 KB with the word data inline. Grep for the
+  symbol (`G3SRC`, `quiz`, `pickW` …) and read that range. Read the whole file
+  only for layout-wide changes.
+- Adding or fixing words touches `G3SRC` / `G2` only: no plan and no UI
+  click-through. Check the word counts per unit and that the app loads without
+  errors.
+- Run the Playwright update-flow test only when `version.js`, `sw.js` or
+  `checkUpdate()` changed.
+- Test logs print only failures and a final count.
+- Open the source PDF only when the task is about the word list.
